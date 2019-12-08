@@ -166,13 +166,13 @@ public class BingSearchUtil {
         return keyword;
     }*/
 
-   @Test
+   /*@Test
     public void testInfo123(){
        File file = new File("C:\\Users\\admin\\Desktop\\bing");
        for (int i = 0; i <file.listFiles().length ; i++) {
            File file1 = file.listFiles()[i];
            System.out.println(file1.getName());
        }
-   }
+   }*/
 }
 

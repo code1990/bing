@@ -21,7 +21,7 @@ public class BingSearchWorker {
     private String errPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\err.txt";
     private List<String> filterList = BingSearchUtil.readTxt(filterPath);
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
-    int pageSize = 30;
+    int pageSize = 50;
     private String Main_url = "https://cn.bing.com/";
     private String resultXlsPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\";
     private String resultTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\";
@@ -121,6 +121,7 @@ public class BingSearchWorker {
                 if (null == filterUrl(href)) {
                     filterSize++;
                 } else {
+                    System.out.println(title + "\t" + href);
                     resultList.add(title + "\t" + href);
                 }
             }

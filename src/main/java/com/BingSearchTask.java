@@ -28,22 +28,22 @@ public class BingSearchTask {
     static SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 EEEE HH:mm:ss:SSS");
     private List<String> kwList = ExcelUtils.readXls(kwPath);
     int index = 1;
-    int allCount= kwList.size();
-    int pageSize = 30;
+    int allCount = kwList.size();
+    int pageSize = 50;
+
     @Scheduled(cron = "0/20 * * * * ?")
     @PostConstruct
     public void job() {
         int start = 0;
         int page = 0;
-        int size = 0;
 
         String restartInfo = BingSearchUtil.readTxt(errPath).get(0);
         if (!"0_0".equals(restartInfo.trim())) {
             start = new Integer(restartInfo.split("_")[0]);
             page = new Integer(restartInfo.split("_")[1]);
         }
-        if ((start == allCount-1) && (page==pageSize-1)) {
-            System.out.println("请设置【"+errPath+"】文件内容:0_0,开始新的任务");
+        if ((start == allCount - 1) && (page == pageSize - 1)) {
+            System.out.println("请设置【" + errPath + "】文件内容:0_0,开始新的任务");
             return;
         }
         long startTime = System.currentTimeMillis();
@@ -52,16 +52,13 @@ public class BingSearchTask {
 
             System.out.println(sdf.format(new Date()) + " 任务第" + index + "次启动!");
             WebDriver driver = BingSearchUtil.getDefaultChromeDriver(false);
-            System.out.println(start+"\t"+kwList.size());
             for (int i = start; i < kwList.size(); i++) {
-//                if(page<pageSize){
-                    String srcWord = kwList.get(i).trim();
-                    BingSearchWorker worker = new BingSearchWorker();
-                    worker.startTask(driver, srcWord, i, page,allCount);
-                    page=0;
-//                }
+                String srcWord = kwList.get(i).trim();
+                BingSearchWorker worker = new BingSearchWorker();
+                worker.startTask(driver, srcWord, i, page, allCount);
+                page = 0;
             }
-            BingSearchUtil.writeTxt(errPath,(allCount-1)+"_"+(pageSize-1));
+            BingSearchUtil.writeTxt(errPath, "0_0");
             BingSearchUtil.killChrome();
             WindowsUtil.main(null);
         } catch (Exception e) {
