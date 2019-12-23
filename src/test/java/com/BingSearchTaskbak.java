@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Component
 @EnableScheduling
-public class BingSearchTask {
+public class BingSearchTaskbak {
     Logger logger = LoggerFactory.getLogger(BingApplication.class);
     private String userName = System.getProperty("user.name");
     private String kwPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\keyword.xls";
@@ -58,12 +58,11 @@ public class BingSearchTask {
 
             System.out.println(sdf.format(new Date()) + " 任务第" + index + "次启动!");
             logger.info(sdf.format(new Date()) + " 任务第" + index + "次启动!");
-            WebDriver chromeDriver = BingSearchUtil.getChrome(true);
-//            WebDriver firefoxDriver = BingSearchUtil.getFireFox(false);
+            WebDriver driver = BingSearchUtil.getChrome(false);
             for (int i = start; i < kwList.size(); i++) {
                 String srcWord = kwList.get(i).trim();
                 BingSearchWorker worker = new BingSearchWorker();
-                worker.startTask(chromeDriver, srcWord, i, page, allCount);
+                worker.startTask(driver, srcWord, i, page, allCount);
                 page = 0;
             }
             sendSimpleMail();

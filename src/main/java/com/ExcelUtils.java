@@ -4,6 +4,8 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ import java.util.List;
  * @author admin
  */
 public class ExcelUtils {
-
+    static Logger logger = LoggerFactory.getLogger(BingApplication.class);
     /*public static void main(String[] args) throws Exception {
         String srcPath = "C:\\Users\\admin\\Desktop\\bing\\keyword.xls";
         List<String> list = ExcelUtils.readXls(srcPath);
@@ -24,7 +26,7 @@ public class ExcelUtils {
         for (int i = 0; i < list.size(); i++) {
             list2.add(list.get(i)+"\t"+"q");
         }
-        System.out.println(list2.size());
+        logger.info(list2.size());
         ExcelUtils.writeXls(srcPath2,list2);
     }*/
 
@@ -82,5 +84,6 @@ public class ExcelUtils {
             e.printStackTrace();
         }
         System.out.println(file.getName()+">>>excel写入ok!");
+        logger.info(file.getName()+">>>excel写入ok!");
     }
 }

@@ -2,7 +2,8 @@ package com;
 
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.List;
  * @Description:
  */
 public class WindowsUtil {
+    Logger logger = LoggerFactory.getLogger(BingApplication.class);
     // 得到进程ID
     public static String getProcessId(int port) {
         InputStream is = null;

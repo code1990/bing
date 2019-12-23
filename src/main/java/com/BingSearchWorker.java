@@ -1,9 +1,10 @@
 package com;
 
-import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
  * @date 2019/12/5
  */
 public class BingSearchWorker {
+    Logger logger = LoggerFactory.getLogger(BingApplication.class);
     private String userName = System.getProperty("user.name");
     private String filterPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\filter.txt";
     private String errPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\err.txt";
@@ -24,8 +26,8 @@ public class BingSearchWorker {
     int pageSize = 50;
     private String Main_url = "https://cn.bing.com/";
     private String resultXlsPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\";
-    private String resultTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\";
-    private String tmpTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\tmp.txt";
+    private String resultTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\txt\\";
+    private String tmpTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\tmp\\tmp.txt";
     List<String> allList = new ArrayList<>();
     int filterSize = 0;
     public void startTask(WebDriver driver, String srcWord, int number, int page,int allCount) {
@@ -35,10 +37,13 @@ public class BingSearchWorker {
         if (page != 0) {
             List<String> tmpList = BingSearchUtil.readTxt(tmpTxtPath);
             System.out.println("备份数据恢复完成,共"+tmpList.size()+"条");
+            logger.info("备份数据恢复完成,共"+tmpList.size()+"条");
             allList.addAll(tmpList);
         }
         System.out.println();
         System.out.println(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord +
+                "】, 总共【"+pageSize+"】页爬取开始");
+        logger.info(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord +
                 "】, 总共【"+pageSize+"】页爬取开始");
         long startTime = System.currentTimeMillis();
         for (int i = page; i < urlList.size(); i++) {
@@ -70,6 +75,8 @@ public class BingSearchWorker {
             filterInfo = "过滤【" + filterSize + "】条,";
         }
         System.out.println(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord + "】,总共【"+pageSize+"】页,总共【" + allList.size() + "】条!" + filterInfo + "耗时" + ((System.currentTimeMillis() - startTime)) +
+                "毫秒");
+        logger.info(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord + "】,总共【"+pageSize+"】页,总共【" + allList.size() + "】条!" + filterInfo + "耗时" + ((System.currentTimeMillis() - startTime)) +
                 "毫秒");
     }
 
@@ -104,6 +111,8 @@ public class BingSearchWorker {
         List<String> resultList = new ArrayList<>();
         System.out.println("第【" + (number+1) + "】个关键字【" + srcWord +
                 "】,第【" + (page + 1) + "】页爬取开始");
+        logger.info("第【" + (number+1) + "】个关键字【" + srcWord +
+                "】,第【" + (page + 1) + "】页爬取开始");
         long startTime = System.currentTimeMillis();
 
         for (int j = 0; j < list.size(); j++) {
@@ -122,6 +131,7 @@ public class BingSearchWorker {
                     filterSize++;
                 } else {
                     System.out.println(title + "\t" + href);
+                    logger.info(title + "\t" + href);
                     resultList.add(title + "\t" + href);
                 }
             }
@@ -129,6 +139,9 @@ public class BingSearchWorker {
         }
 
         System.out.println("第【" + (number+1) + "】个关键字【" + srcWord +
+                "】,第【" + (page + 1) + "】页爬取结束,共"+list.size()+"条,耗时"+ ((System.currentTimeMillis() - startTime)) +
+                "毫秒");
+        logger.info("第【" + (number+1) + "】个关键字【" + srcWord +
                 "】,第【" + (page + 1) + "】页爬取结束,共"+list.size()+"条,耗时"+ ((System.currentTimeMillis() - startTime)) +
                 "毫秒");
         try {
