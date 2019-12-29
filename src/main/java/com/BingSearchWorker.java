@@ -3,90 +3,40 @@ package com;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wei
  * @description
  * @date 2019/12/5
  */
+//@Component
 public class BingSearchWorker {
-    Logger logger = LoggerFactory.getLogger(BingApplication.class);
+
     private String userName = System.getProperty("user.name");
     private String filterPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\filter.txt";
-    private String errPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\err.txt";
+    private String logPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\log.txt";
     private List<String> filterList = BingSearchUtil.readTxt(filterPath);
-    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
-    int pageSize = 50;
     private String Main_url = "https://cn.bing.com/";
-    private String resultXlsPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\";
-    private String resultTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\txt\\";
-    private String tmpTxtPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\tmp\\tmp.txt";
-    List<String> allList = new ArrayList<>();
-    int filterSize = 0;
-    public void startTask(WebDriver driver, String srcWord, int number, int page,int allCount) {
-        List<String> urlList = getUrlList(srcWord);
-        String fileNameXls = "bing_" + srcWord + ".xls";
-        String fileNameTxt = "bing_" + srcWord + ".txt";
-        if (page != 0) {
-            List<String> tmpList = BingSearchUtil.readTxt(tmpTxtPath);
-            System.out.println("备份数据恢复完成,共"+tmpList.size()+"条");
-            logger.info("备份数据恢复完成,共"+tmpList.size()+"条");
-            allList.addAll(tmpList);
-        }
-        System.out.println();
-        System.out.println(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord +
-                "】, 总共【"+pageSize+"】页爬取开始");
-        logger.info(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord +
-                "】, 总共【"+pageSize+"】页爬取开始");
-        long startTime = System.currentTimeMillis();
-        for (int i = page; i < urlList.size(); i++) {
-            String url = urlList.get(i);
-            driver.get(url);
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            BingSearchUtil.writeTxt(errPath, number + "_" + i);
-            List list = driver.findElement(By.id("b_results")).findElements(By.className("b_algo"));
-            List<String> resultList = getListInfo(list, srcWord, number, i,allCount);
-            allList.addAll(resultList);
-            if(i!=urlList.size()-1){
-                BingSearchUtil.writeTxt(resultTxtPath + fileNameTxt, allList);
-                BingSearchUtil.writeTxt(tmpTxtPath, allList);
-                ExcelUtils.writeXls(resultXlsPath + fileNameXls, allList);
-                System.out.println();
-            }
-        }
-        BingSearchUtil.writeTxt(resultTxtPath + fileNameTxt, allList);
-        BingSearchUtil.writeTxt(tmpTxtPath, allList);
-        ExcelUtils.writeXls(resultXlsPath + fileNameXls, allList);
-        BingSearchUtil.writeTxt(errPath, number + "_0");
-        System.out.println();
-        String filterInfo = "";
-        if (filterSize != 0) {
-            filterInfo = "过滤【" + filterSize + "】条,";
-        }
-        System.out.println(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord + "】,总共【"+pageSize+"】页,总共【" + allList.size() + "】条!" + filterInfo + "耗时" + ((System.currentTimeMillis() - startTime)) +
-                "毫秒");
-        logger.info(sdf.format(new Date()) + "\t总共【"+allCount+"】个关键字,第【" + (number+1) + "】个关键字【" + srcWord + "】,总共【"+pageSize+"】页,总共【" + allList.size() + "】条!" + filterInfo + "耗时" + ((System.currentTimeMillis() - startTime)) +
-                "毫秒");
-    }
+    private int pageSize = 50;
+    @Autowired
+    private MailService mailService;
 
     public String filterUrl(String href) {
-        for (String str : filterList) {
-            if (!href.contains(str.trim())) {
-                return href;
+        String result = href;
+        for (int i = 0; i < filterList.size(); i++) {
+            String str = filterList.get(i).toLowerCase().trim();
+            if (href.toLowerCase().contains(str)) {
+                result = null;
+                break;
             }
         }
-        return null;
+        return result;
     }
 
     public List<String> getUrlList(String srcWord) {
@@ -107,71 +57,94 @@ public class BingSearchWorker {
         return urlList;
     }
 
-    public List<String> getListInfo(List<WebElement> list, String srcWord, int number, int page,int allCount) {
-        List<String> resultList = new ArrayList<>();
-        System.out.println("第【" + (number+1) + "】个关键字【" + srcWord +
-                "】,第【" + (page + 1) + "】页爬取开始");
-        logger.info("第【" + (number+1) + "】个关键字【" + srcWord +
-                "】,第【" + (page + 1) + "】页爬取开始");
-        long startTime = System.currentTimeMillis();
-
+    public List<Map<String, String>> getResultList(List<WebElement> list, String srcWord, int pageNumber,int index) {
+        List<Map<String, String>> resultList = new ArrayList<>();
+        String info = BingSearchUtil.getBrowserName(index)+">>"+srcWord;
         for (int j = 0; j < list.size(); j++) {
             WebElement element = list.get(j);
             String text = element.getText();
-            text = text.replaceAll("\n","").trim();
-            text = text.replaceAll("\t","").trim();
-            if(!"".equals(text.trim())){
-                String title =element.findElement(By.tagName("h2")).getText();
+            text = text.replaceAll("\n", "").trim();
+            text = text.replaceAll("\t", "").trim();
+            if (!"".equals(text.trim())) {
+                String title = element.findElement(By.tagName("h2")).getText();
                 String href = element.findElement(By.tagName("a")).getAttribute("href");
-                if (srcWord.contains(":.")) {
-                    String split = srcWord.split(":")[1];
-                    href = href.split(split)[0] + split;
-                }
-                if (null == filterUrl(href)) {
-                    filterSize++;
-                } else {
-                    System.out.println(title + "\t" + href);
-                    logger.info(title + "\t" + href);
-                    resultList.add(title + "\t" + href);
+                int length  =href.replace("//","&&").indexOf("/");
+                href=href.substring(0,length);
+                if (null != filterUrl(href)) {
+                    System.out.println(info+">>"+title + "\t" + href);
+                    Map<String, String> map = new HashMap<>();
+                    map.put("page_num", pageNumber + "");
+                    map.put("page_title", text);
+                    map.put("page_url", href);
+                    resultList.add(map);
                 }
             }
 
         }
-
-        System.out.println("第【" + (number+1) + "】个关键字【" + srcWord +
-                "】,第【" + (page + 1) + "】页爬取结束,共"+list.size()+"条,耗时"+ ((System.currentTimeMillis() - startTime)) +
-                "毫秒");
-        logger.info("第【" + (number+1) + "】个关键字【" + srcWord +
-                "】,第【" + (page + 1) + "】页爬取结束,共"+list.size()+"条,耗时"+ ((System.currentTimeMillis() - startTime)) +
-                "毫秒");
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return resultList;
     }
 
-    /*@Test
-    public void getInfo(){
-        String url = "https://cn.bing.com/search?q=fasteners+site%3a.af&qs=HS&sc=8-0&cvid=3AA81546DEFF4F45BF3B7983338EFF6D&FORM=QBLH&sp=1";
-        String keyword = "1_1_fasteners site:.af";
-        WebDriver driver = BingSearchUtil.getDefaultChromeDriver(false);
-        getPageInfo(driver,url,keyword);
-    }*/
-
-    /*@Test
-    public void testInfo123() {
-        String userName = System.getProperty("user.name");
-        String kwPath = "C:\\Users\\" + userName + "\\Desktop\\bing\\keyword.xls";
-        List<String> kwList = ExcelUtils.readXls(kwPath);
-        WebDriver driver = BingSearchUtil.getDefaultChromeDriver(false);
-        for (int i = 0; i < kwList.size(); i++) {
-            System.out.println(i);
-            String srcWord = kwList.get(i);
-            BingSearchWorker worker = new BingSearchWorker();
-            worker.startTask(driver, srcWord, i, 0);
+    public List<Map<String, String>> startTask(WebDriver driver, String kw, int index) {
+        String srcWord = kw.split(":")[1];
+        String number = kw.split(":")[0];
+        List<String> urlList = getUrlList(srcWord);
+        long startTime = System.currentTimeMillis();
+        System.out.println("第【" + number + "】关键字【" + srcWord + "】爬取开始>>>>>>>>>");
+        List<Map<String, String>> list = new ArrayList<>();
+        for (int i = 0; i < urlList.size(); i++) {
+            String url = urlList.get(i);
+            driver.get(url);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            List<WebElement> webList = driver.findElement(By.id("b_results")).findElements(By.className("b_algo"));
+            list.addAll(getResultList(webList, srcWord, i,index));
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-    }*/
+        System.out.println("第【" + number + "】关键字【" + srcWord + "】爬取结束<<<<<<<<");
+        System.out.println("耗时" + (System.currentTimeMillis() - startTime )/ 1000 + "秒");
+        return list;
+
+    }
+
+    public void startTask(BingSearchDao dao,int index) {
+        System.out.println("任务"+index+"启动");
+        List<String> list = dao.getAllKwList(index);
+        WebDriver driver = getDriver(index);
+        for (int i = 0; i < list.size(); i++) {
+            String kw = list.get(i).trim();
+            List<Map<String, String>> resultList = startTask(driver, kw, index);
+            String str = kw.split(":")[1];
+            String tableName = "kw_" + str.replaceAll(" ", "_");
+            dao.dropTable(tableName);
+            dao.createTable(tableName);
+            dao.batchInsertPage(tableName, resultList);
+            dao.updateKwInfo(str, index);
+            List<String> logList = BingSearchUtil.readTxt(logPath);
+            logList.add(kw+">>ok");
+            BingSearchUtil.writeTxt(logPath,logList);
+            BingSearchUtil.killBrowser("chrome");
+        }
+        mailService.sendSimpleMail();
+    }
+
+    public WebDriver getDriver(int index) {
+        WebDriver driver = null;
+        if (index == 1) {
+            driver = BingSearchUtil.getChrome(false);
+        } else if (index == 2) {
+            driver = BingSearchUtil.getFireFox(false);
+        } else if (index == 3) {
+            driver = BingSearchUtil.getIE();
+        }
+        return driver;
+    }
+
 }
 

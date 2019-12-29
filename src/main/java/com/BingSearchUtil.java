@@ -12,8 +12,10 @@ import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ public class BingSearchUtil {
         System.setProperty("webdriver.chrome.driver", "C:\\driver\\chromedriver.exe");
         System.setProperty("webdriver.gecko.driver","C:\\driver\\geckodriver.exe");
         System.setProperty("webdriver.firefox.bin","F:\\soft\\Firefox\\firefox.exe");
+        System.setProperty("webdriver.ie.driver", "C:\\driver\\IEDriverServer.exe");
         //控制台关闭日志
         System.setProperty("webdriver.chrome.silentOutput", "true");
         java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
@@ -122,18 +125,27 @@ public class BingSearchUtil {
         return new ChromeDriver(options);
     }
 
-    public static void killChrome() {
-        Runtime runTime = Runtime.getRuntime();
-        //chrome浏览器和driver
+    public static void killBrowser(String type){
+        String command = "taskkill /F /IM ";
+        String command2 = "";
+        if(type.equals("iexplorer")){
+            command = command+"iexplorer.exe";
+        } else if(type.equals("safari")){
+            command = command+"safari.exe";
+        }else if(type.equals("firefox")){
+            command = command+"firefox.exe";
+        }else if(type.equals("chrome")){
+            command = command+"chrome.exe";
+            command2="tskill chromedriver";
+        }
         try {
-            runTime.exec("tskill chrome");
-            runTime.exec("tskill chromedriver");
-            System.out.println("=====================>kill chrome ok");
-            Thread.sleep(3000);
-        } catch (IOException | InterruptedException e) {
+            Runtime.getRuntime().exec(command);
+            if (!"".equals(command2)){
+                Runtime.getRuntime().exec(command2);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static String encodeChar(String keyword){
@@ -165,15 +177,9 @@ public class BingSearchUtil {
      */
     public static WebDriver getFireFox(boolean show){
         FirefoxBinary firefoxBinary = new FirefoxBinary();
-//        if(!show){
-//            //隐藏浏览器
-//            firefoxBinary.addCommandLineOptions("--headless");
-//        }
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.setBinary(firefoxBinary);
         firefoxOptions.setHeadless(!show);
-//        firefoxOptions.setLogLevel(FirefoxDriverLogLevel.fromLevel(Level.OFF));
-//        firefoxOptions.addArguments("--headless");
         firefoxOptions.addArguments("--disable-gpu");
         firefoxOptions.addArguments("window-size=1200x600");
         firefoxOptions.addPreference("permissions.default.image","2");
@@ -182,32 +188,30 @@ public class BingSearchUtil {
         return driver;
     }
 
-//    public static WebDriver getOperaDriver(){
-//        OperaDriver driver = new OperaDriver();
-//        OperaOptions operaOptions = new OperaOptions();
-//        operaOptions.addArguments("--headless");
-//        return driver;
-//
-//    }
+    public static WebDriver getIE(){
 
-    public static Document getDefaultBrowser(String url) throws Exception {
-        WebClient webClient = new WebClient();
-        webClient.getOptions().setJavaScriptEnabled(true);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setActiveXNative(false);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setThrowExceptionOnScriptError(false);
-        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        webClient.getOptions().setTimeout(10000);
-        HtmlPage htmlPage = null;
-        try {
-            htmlPage = webClient.getPage(url);
-            webClient.waitForBackgroundJavaScript(10000);
-            String htmlString = htmlPage.asXml();
-            return Jsoup.parse(htmlString);
-        } finally {
-            webClient.close();
+
+        //如下两行为对浏览器的特殊设置
+
+        DesiredCapabilities dc = DesiredCapabilities.internetExplorer();
+
+        dc.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
+
+        return new InternetExplorerDriver(dc);
+
+    }
+
+
+    public static String getBrowserName(int index){
+        String name="";
+        if(index ==1){
+            name="Chrome浏览器";
+        } else if(index ==2){
+            name="Firefox浏览器";
+        } else if(index ==3){
+            name="IE浏览器";
         }
+        return name;
     }
 }
 

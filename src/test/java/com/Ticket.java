@@ -43,19 +43,19 @@
 ////            driver=firefoxDriver;
 ////        }
 //
-//        String srcWord = kwList.get(kwNum).trim();
-//        BingSearchWorker worker = new BingSearchWorker();
-//        worker.startTask(chromeDriver, srcWord, kwNum, page, allCount);
-//        kwNum++;
-//        if(kwNum++<kwList.size()){
-//            String srcWord2 = kwList.get(kwNum).trim();
-//            BingSearchWorker worker2 = new BingSearchWorker();
-//            worker.startTask(firefoxDriver, srcWord2, kwNum, page, allCount);
-//            System.out.println(Thread.currentThread().getName() + "爬取了第【" + (kwNum + 1) + "】个关键字【" + kwList.get(kwNum) + "】，还剩【" +
-//                    (allCount - kwNum - 1) + "】个关键字。");
-//        }
-//        page = 0;
-//        kwNum++;
+////        String srcWord = kwList.get(kwNum).trim();
+////        BingSearchWorker worker = new BingSearchWorker();
+////        worker.startTask(chromeDriver, srcWord, kwNum, page, allCount);
+////        kwNum++;
+////        if(kwNum++<kwList.size()){
+////            String srcWord2 = kwList.get(kwNum).trim();
+////            BingSearchWorker worker2 = new BingSearchWorker();
+////            worker.startTask(firefoxDriver, srcWord2, kwNum, page, allCount);
+////            System.out.println(Thread.currentThread().getName() + "爬取了第【" + (kwNum + 1) + "】个关键字【" + kwList.get(kwNum) + "】，还剩【" +
+////                    (allCount - kwNum - 1) + "】个关键字。");
+////        }
+////        page = 0;
+////        kwNum++;
 //    }
 //
 //    @Override
